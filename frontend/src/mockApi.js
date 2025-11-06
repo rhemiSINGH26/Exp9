@@ -14,6 +14,25 @@ const initializeStorage = () => {
   }
 };
 
+// Seed a default admin user (for quick login) if users list is empty
+const seedDefaultUserIfNeeded = () => {
+  const users = JSON.parse(localStorage.getItem('users') || '[]');
+  if (users.length === 0) {
+    // Use synchronous hashing for seed (salt rounds = 10)
+    const hashed = bcrypt.hashSync('admin123', 10);
+    const adminUser = {
+      id: generateId(),
+      username: 'admin',
+      email: 'admin@warehouse.com',
+      password: hashed,
+      role: 'admin',
+      createdAt: new Date().toISOString()
+    };
+    users.push(adminUser);
+    localStorage.setItem('users', JSON.stringify(users));
+  }
+};
+
 // Helper to generate unique IDs
 const generateId = () => {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
@@ -63,6 +82,7 @@ export const mockAPI = {
   // Initialize storage
   init: () => {
     initializeStorage();
+    seedDefaultUserIfNeeded();
   },
 
   // Auth API
